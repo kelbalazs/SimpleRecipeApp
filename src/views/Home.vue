@@ -30,16 +30,17 @@
 
           <div class="group">
             <label>Ingredients</label>
-            <div class="ingredient" v-for="i in newRecipe.ingredientRows" :key="i">
-              <input type="text" v-model="newRecipe.ingredients[i - 1]" />
+            <div class="ingredient" v-for="(ingredient, index) in newRecipe.ingredients" :key="index">
+              <input type="text" v-model="newRecipe.ingredients[index].value" /> <button type="button" @click="deleteIngrdient(index)">Delete</button>
+              <span class="error" v-if="submitted && newRecipe.ingredients[index].value">Pleaes Enter Ingredients</span>
             </div>
             <button type="button" @click="addNewIngredient">Add Ingredient</button>
           </div>
 
           <div class="group">
             <label>Method</label>
-            <div class="method" v-for="i in newRecipe.methodRows" :key="i">
-              <textarea v-model="newRecipe.method[i - 1]"></textarea>
+            <div class="method" v-for="(method, index) in newRecipe.methods" :key="index">
+              <textarea :value="newRecipe.methods[index].value"></textarea>
             </div>
             <button type="button" @click="addNewStep">Add step</button>
           </div>
@@ -64,9 +65,8 @@ export default {
       title: '',
       description: '',
       ingredients: [],
-      method: [],
-      ingredientRows: 1,
-      methodRows: 1
+      methods: [],
+      submitted: false
     });
     const popupOpen = ref(false);
     const store = useStore();
@@ -74,29 +74,43 @@ export default {
       popupOpen.value = !popupOpen.value;
     }
     const addNewIngredient = () => {
-      newRecipe.value.ingredientRows++;
+      newRecipe.value.ingredients.push({});
     }
     
     const addNewStep = () => {
-      newRecipe.value.methodRows++;
+      newRecipe.value.methods.push({});
     }
     
     const addNewRecipe = () => {
+      newRecipe.value.submitted = true
       newRecipe.value.slug = newRecipe.value.title.toLowerCase().replace(/\s/g, '-');
       if (!newRecipe.value.slug) {
         alert("Please enter a title");
         return;
+      } else if (newRecipe.value.ingredients.length <= 0) {
+        alert("Please add ingredient");
+        return;
+      } else if (newRecipe.value.ingredients.length > 0) {
+        const emptyIncredient = newRecipe.value.ingredients.filter(item => !item.value)
+        console.log('emptyIncredient', emptyIncredient)
+        if (emptyIncredient.length !== 0) {
+          alert("Please enter ingredient");
+          return;
+        }
       }
       store.commit('ADD_RECIPE', { ...newRecipe.value });
       newRecipe.value = {
         title: '',
         description: '',
         ingredients: [],
-        method: [],
-        ingredientRows: 1,
-        methodRows: 1
+        methods: []
       };
+      newRecipe.value.submitted = false
       togglePopup();
+    }
+
+    const deleteIngrdient  = (index) => {
+      newRecipe.value.ingredients.splice(index, 1);
     }
     
     return {
@@ -106,6 +120,7 @@ export default {
       popupOpen,
       addNewStep,
       addNewIngredient,
+      deleteIngrdient
     }
   }
 }
@@ -190,5 +205,12 @@ h1 {
 .popup-content button[type="submit"] {
   margin-right: 1rem;
 }
-  
+.ingredient input[type="text"] {
+  width: 75%;
+  float: left;
+} 
+.ingredient button  {
+  width: 20%;
+  margin: 2px 5px;
+} 
 </style>

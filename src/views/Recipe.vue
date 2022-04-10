@@ -8,7 +8,7 @@
 			<h3>Ingredients</h3>
 			<ul>
 				<li v-for="(ingredient, i) in recipe.ingredients" :key="i">
-					{{ ingredient }}
+					{{ ingredient.value }}
 				</li>
 			</ul>
 		</div>
